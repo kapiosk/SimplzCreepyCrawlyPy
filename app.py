@@ -1,4 +1,4 @@
-from flask import Flask, make_response, request
+from flask import Flask, request, Response
 from playwright.sync_api import sync_playwright
 
 #playwright install
@@ -9,28 +9,28 @@ app = Flask(__name__)
 def index():
     return 'PostMe! PDF!!'
 
+@app.route('/Test', methods=['GET'])
+def test():
+    with sync_playwright() as p:
+        with p.chromium.launch() as browser:
+            with browser.new_context(ignore_https_errors = True) as context:
+                page = context.new_page()
+                page.set_content('<p>Test</p>')
+                data = page.pdf(format = 'A4', print_background = True)
+                return Response(response=data, status=200, mimetype="application/pdf")
+
 @app.route('/PDFURL', methods=['GET'])
 def pdfFromURL():
-    dataUrl = request.args.get('dataUrl')
+    dataUrl = request.args['dataUrl']
     if dataUrl is not None:
         with sync_playwright() as p:
-            browser = p.chromium.launch()
-            page = browser.new_page()
-            page.goto("https://playwright.dev")
-            print(page.title())
-            browser.close()
-    resp = make_response()
-    return resp
-
-# def CreateResponse(html, fileName):
-#     resp = make_response()
-#     if fileName is None:
-#         fileName = 'temp.pdf'
-#     pdf = weasyprint.HTML(string=html)
-#     resp.data = pdf.write_pdf()
-#     resp.headers['Content-Disposition'] = f'attachment; filename="{fileName}"'
-#     resp.headers['Content-Type'] = 'application/pdf'
-#     return resp
+            with p.chromium.launch() as browser:
+                with browser.new_context(ignore_https_errors = True) as context:
+                    page = context.new_page()
+                    page.goto(dataUrl)
+                    page.wait_for_load_state('networkidle')
+                    data = page.pdf(format = 'A4', print_background = True)
+                    return Response(response=data, status=200, mimetype="application/pdf")
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001)
