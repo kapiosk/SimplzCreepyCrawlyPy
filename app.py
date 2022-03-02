@@ -1,8 +1,6 @@
 from flask import Flask, request, Response
 from playwright.sync_api import sync_playwright
 
-#playwright install
-#playwright install-deps 
 app = Flask(__name__)
 
 @app.route('/', methods = ['GET'])
