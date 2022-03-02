@@ -20,13 +20,13 @@ def test():
 @app.route('/PDFURL', methods = ['GET'])
 def pdfFromURL():
     dataUrl = request.args['dataUrl']
-    authorization = request.headers['Authorization']
     if dataUrl is not None:
         with sync_playwright() as p:
             with p.chromium.launch() as browser:
                 with browser.new_context(ignore_https_errors = True) as context:
                     page = context.new_page()
-                    if authorization is not None:
+                    if 'Authorization' in request.headers:
+                        authorization = request.headers['Authorization']
                         page.set_extra_http_headers({'Authorization': f'Bearer {authorization}'})
                     page.goto(dataUrl)
                     page.wait_for_load_state('networkidle')
