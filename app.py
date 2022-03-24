@@ -28,9 +28,12 @@ def pdfFromURL():
                     if 'Authorization' in request.headers:
                         authorization = request.headers['Authorization']
                         page.set_extra_http_headers({'Authorization': f'Bearer {authorization}'})
+                    landscape = False
+                    if 'landscape' in request.headers:
+                        landscape = True
                     page.goto(dataUrl)
                     page.wait_for_load_state('networkidle')
-                    data = page.pdf(format = 'A4', print_background = True)
+                    data = page.pdf(format = 'A4', print_background = True, landscape = landscape)
                     return Response(response = data, status = 200, mimetype = 'application/pdf')
 
 if __name__ == '__main__':
